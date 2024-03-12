@@ -1,17 +1,17 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
+import "./App.css";
 
 function ProductsPage() {
   const [products, setProducts] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [filteredProducts, setFilteredProducts] = useState([]);
+  const [setSortBy] = useState(null);
 
   useEffect(() => {
     async function fetchProducts() {
       try {
         const response = await axios.get("https://fakestoreapi.com/products");
         setProducts(response.data);
-        setFilteredProducts(response.data);
       } catch (error) {
         console.error("Error fetching products: ", error);
       }
@@ -20,19 +20,12 @@ function ProductsPage() {
     fetchProducts();
   }, []);
 
-  useEffect(() => {
-    const filtered = products.filter((product) =>
-      product.title.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-    setFilteredProducts(filtered);
-  }, [searchTerm, products]);
-
   const handleSearchChange = (event) => {
     setSearchTerm(event.target.value);
   };
 
   const handleSort = (type) => {
-    let sortedProducts = [...filteredProducts];
+    let sortedProducts = [...products];
     switch (type) {
       case "price_asc":
         sortedProducts.sort((a, b) => a.price - b.price);
@@ -49,8 +42,13 @@ function ProductsPage() {
       default:
         break;
     }
-    setFilteredProducts(sortedProducts);
+    setSortBy(type);
+    setProducts(sortedProducts);
   };
+
+  const filteredProducts = products.filter((product) =>
+    product.title.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div>
@@ -76,6 +74,7 @@ function ProductsPage() {
         {filteredProducts.map((product) => (
           <div key={product.id} className="product-card">
             <h3>{product.title}</h3>
+
             <p>{product.description}</p>
             <p>Price: ${product.price}</p>
           </div>
